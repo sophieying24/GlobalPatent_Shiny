@@ -22,20 +22,49 @@ dashboardPage(
                             "world_year",
                             "Select Year:",
                             choices = unique(df$year),
-                            selected = 2017),
+                            selected = 2018),
                         offset = 0.5, width = 6
                         )),
-                    fluidRow(
-                        plotlyOutput("map"),
+
+                    
+                    tabsetPanel(
+                        tabPanel("World Map",
+                             fluidRow(
+                                 infoBoxOutput("max_country"),
+                                 infoBoxOutput("max_domain")
+                                 ),
+                            fluidRow(
+                                plotlyOutput("map"),
+                            ),
+                            br(),
+
                         ),
-                    br(),
-                    fluidRow(
-                        column(
-                        box(plotlyOutput("domain_rank"), width = 6),
-                        box(plotlyOutput("country_rank"), width = 4),
-                        width = 11, offset = 0.5
-                        )
-                        )
+                        
+                        tabPanel("Leaderboard",
+                                 box(title = "Top 10 Countries by Total Patents Count", plotlyOutput("country_rank"), width = 6),
+                                     
+                                     # 
+                                     # column(
+                                     # plotlyOutput("domain_rank"),
+                                     # plotlyOutput("country_rank"), 
+                                     # width = 11, offset = 0.5),
+                                     
+                                 box(title = "Rank of Tech Domain by Total Patents Count",plotlyOutput("domain_rank"), width = 6)
+                                     
+
+                                 
+                                 )
+                        
+                    )
+                    
+                    
+                    
+                    
+                   
+                    
+                    
+                    
+                    
                     ),
             
 ###################### Country  
@@ -53,23 +82,23 @@ dashboardPage(
                                 ),
                     
                     tabsetPanel(
-                        tabPanel("Overview",
+                        tabPanel("Country Overview",
                                 fluidRow(
                                     infoBoxOutput("box1"),
                                     infoBoxOutput("box2")),
                                 fluidRow(
-                                    box(plotlyOutput("country_domain"), width = 9)),
+                                    box(plotlyOutput("country_domain"), width = 12)),
                                    
                                   
                                 fluidRow(
                                     column(selectizeInput("country_year",
                                                     "Select Year:",
                                                     choices = unique(df$year),
-                                                    selected = 2017, size = 2),
+                                                    selected = 2018, size = 2),
                                            offset = 0.5, width = 6)
                                     ),
                                 fluidRow(
-                                    box(plotlyOutput("graph1"), width = 9)
+                                    box(plotlyOutput("graph1"), width = 12)
                                 )),
                         tabPanel("Additional Insights",
                                  box(plotlyOutput("graph2")),
@@ -92,6 +121,20 @@ dashboardPage(
                                          "Select Tech Domain:",
                                          choices = sort(unique(df$technology_domain)),
                                          selected = "Computer technology")),
+                    fluidRow(
+                        infoBoxOutput("box3"),
+                        infoBoxOutput("box4")
+                    ),
+                    fluidRow(
+                        box(plotlyOutput("graph6"), width = 12)),
+                    fluidRow(
+                        column(selectizeInput("domain_year",
+                                              "Select Year:",
+                                              choices = unique(df$year),
+                                              selected = 2018, size = 2),
+                               offset = 0.5, width = 3)
+                    ),
+                    fluidRow(box(plotlyOutput("graph7"), width = 12))
                     ),
 
 ###################### Data

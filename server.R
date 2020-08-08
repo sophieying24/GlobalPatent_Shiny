@@ -3,6 +3,7 @@ function(input, output){
 
    
 ############################## World Overview ##############################
+    
 output$map = renderPlotly({
     
         test = df %>% filter(!(location %in% c("WLD", "EU28")) )
@@ -16,7 +17,37 @@ output$map = renderPlotly({
         fig = plot_geo(test)
         fig %>% add_trace(z = test$sum, color = test$sum, colors = "Blues",
                           text = test$country, locations = test$location,
-                          marker = list(line = list(color = toRGB("grey"), width = 0.5)))
+                          marker = list(line = list(color = toRGB("grey"), width = 0.5))) %>% 
+            colorbar(title = '', ticksuffix = '') %>% 
+            layout(geo = list(
+                showframe = FALSE,
+                projection = list(type = 'Mercator')
+            ))
+})
+
+
+output$max_country = renderInfoBox({
+    
+    max = df %>% 
+        filter(year == input$world_year, technology_domain=="Total Patents", country != "World") %>% 
+        group_by(country) %>% summarise(sum = sum(value)) %>% top_n(1,sum)
+    
+    infoBox(title = "Top Country by # of Patents",
+            value = max$country)
+    
+    
+})
+
+output$max_domain = renderInfoBox({
+    
+    max = df %>% 
+        filter(year == input$world_year, technology_domain!="Total Patents", country == "World") %>% 
+        group_by(technology_domain) %>% summarise(sum = sum(value)) %>% top_n(1,sum)
+    
+    infoBox(title = "Top Domain by # of Patents",
+            value = max$technology_domain)
+    
+    
 })
 
 
@@ -30,17 +61,18 @@ output$country_rank = renderPlotly({
         group_by(location, country) %>%
         summarise(sum = sum(value)) %>% arrange(desc(sum))
     
-    ggplot(head(test, 20), aes(x = reorder(country, sum), y = sum)) + geom_bar(stat = "identity") + 
-        coord_flip() 
+    ggplot(head(test, 10), aes(x = reorder(country, sum), y = sum)) + geom_bar(stat = "identity") + 
+        coord_flip() +
+        labs(x = "", y = "Number of Patents") + theme_light()
 })    
 
 
 output$domain_rank = renderPlotly({
-    df %>% filter(ipc !="TOTAL") %>% group_by(year, technology_domain) %>% 
-        filter(year <= input$world_year) %>% 
-        summarise(num_patent = sum(value)) %>% 
-        ggplot(aes(x = year, y = num_patent)) + geom_line(aes(color = technology_domain))
-    
+    df %>% 
+        filter(year == input$world_year, technology_domain!="Total Patents") %>% 
+        group_by(technology_domain) %>% summarise(sum = sum(value)) %>% 
+        ggplot(aes(x = reorder(technology_domain, sum), y = sum)) + geom_bar(stat = "identity") + coord_flip() + 
+        labs(x = "", y = "Number of Patents") + theme_light()
     
 })
 
@@ -69,7 +101,7 @@ output$box1 = renderInfoBox({
     max = df %>% 
         filter(country == input$country, technology_domain!="Total Patents") %>% 
         group_by(technology_domain) %>% summarise(sum = sum(value)) %>% top_n(1,sum)
-    infoBox(title = paste(input$country, "Top Technology Domain"),
+    infoBox(title = paste("Top Technology Domain in ", input$country),
             value = max$technology_domain)
     
     
@@ -78,7 +110,7 @@ output$box1 = renderInfoBox({
 output$box2 = renderInfoBox({
     a = df %>% filter(country == input$country, ipc =="TOTAL")
     b = df %>% filter(country == "World", ipc =="TOTAL")
-    infoBox(title = paste0(input$country,"'s % World Patent Contribution"),
+    infoBox(title = paste0("World Patent Contribution by ", input$country),
             value = paste0(signif(sum(a$value)/sum(b$value)*100,2) , "%"))
 })
 
@@ -89,8 +121,8 @@ output$country_domain = renderPlotly({
         filter(country == input$country,
                technology_domain!="Total Patents") %>% 
         group_by(year, technology_domain) %>% summarise(num_patent = sum(value)) %>% 
-        # top_n(8, sum_patent) %>% 
-        ggplot(aes(x = year, y = num_patent)) + geom_line(aes(color = technology_domain))
+        ggplot(aes(x = year, y = num_patent)) + geom_line(aes(color = technology_domain)) + theme_bw() +
+        labs(x = "Year", y = "Number of Patents", title =" Trend of Patent Count by Technology Domain")
     
 })
     
@@ -99,7 +131,8 @@ output$graph1 = renderPlotly({
     df %>% 
         filter(year == input$country_year, country == input$country, technology_domain!="Total Patents") %>% 
         group_by(technology_domain) %>% summarise(sum = sum(value)) %>% 
-        ggplot(aes(x = reorder(technology_domain, sum), y = sum)) + geom_bar(stat = "identity") + coord_flip()
+        ggplot(aes(x = reorder(technology_domain, sum), y = sum)) + geom_bar(stat = "identity") + coord_flip() + theme_bw() +
+        labs(x = "", y = "Year", title = "Rank of Patent Count by Technology Domain")
     
 })
 
@@ -109,7 +142,8 @@ output$graph2 = renderPlotly({
     df %>% 
         filter(country == input$country, ipc == "TOTAL") %>% 
         group_by(year) %>% summarise(sum = sum(value)) %>% 
-        ggplot(aes(x = year, y = sum)) + geom_line() + ggtitle("Total Patents through Years") + xlim(2004, 2016)
+        ggplot(aes(x = year, y = sum)) + geom_line() + ggtitle("Total Patents through Years") + xlim(2004, 2016) + 
+        labs(x = "Year", y = "Number of Patents", title = "Total Patent Count") + theme_bw()
     
 })
 
@@ -120,8 +154,7 @@ output$graph3 = renderPlotly({
         filter(country == input$country) %>% 
         select(year, GDP_HAB_PPP) %>% 
         ggplot(aes(x = year, y = GDP_HAB_PPP)) + geom_line() + xlim(2004,2016) +
-        ggtitle("GDP Per Capita Trend")
-    
+        labs(x = "Year", y = "GDP per Capita (USD PPPs)", title = "GDP Per Capita") + theme_bw()
     
 })
 
@@ -136,12 +169,13 @@ output$graph4 = renderPlotly({
                   collab = sum(co_wrd),
                   collab_jpn = sum(co_jpn, na.rm = TRUE),
                   collab_usa = sum(co_usa, na.rm = TRUE),
-                  collab_world = collab/total,
-                  collab_ratio_jpn = collab_jpn/total,
-                  collab_ratio_usa = collab_usa/total) %>% 
+                  collab_world = collab/total*100,
+                  collab_ratio_jpn = collab_jpn/total*100,
+                  collab_ratio_usa = collab_usa/total*100) %>% 
         gather(key = "ratio", value = "value", collab_world:collab_ratio_usa) %>% 
         ggplot(aes(x = year, y = value)) + geom_line(aes(color = ratio)) + xlim(2004,2016) + 
-        ggtitle("Patent Collaboration Trend") + theme(legend.position="top")
+        theme(legend.position="top") + theme_bw()+
+        labs(x = "Year", y = "%", title = "Percentage of Patent with Foreign Collaboration")
         
      
      ) %>% layout(legend = list(orientation = "h"))
@@ -153,9 +187,56 @@ output$graph5 = renderPlotly({
         filter(country == input$country) %>% 
         select(year, G_XGDP, HE_XGDP) %>% 
         gather(key = "measure", value = "value", G_XGDP:HE_XGDP, na.rm = TRUE) %>% 
-        ggplot(aes(x = year, y = value, col = measure)) + geom_line() +xlim(2005,2015) +
-        ggtitle("% of GERD & HERD GDP Trends") + theme(legend.position="top")
+        ggplot(aes(x = year, y = value, col = measure)) + geom_line() +xlim(2004,2016) +
+        theme(legend.position="top") + theme_bw()+
+        labs(x = "Year", y = "% of GDP", title = "Gross Domestic and Higher Education Expenditure on R&D")
     ) %>% layout(legend = list(orientation = "h"))
+})
+
+
+
+############################## By Domain ##############################
+
+
+output$box3 = renderInfoBox({
+    
+    max = df %>% 
+        filter(technology_domain == input$domain, country!="World") %>% 
+        group_by(country) %>% summarise(sum = sum(value)) %>% top_n(1,sum)
+    infoBox(title = paste("Top Country in ", input$domain),
+            value = max$country)
+    
+    
+})
+
+output$box4 = renderInfoBox({
+    a = df %>% filter(technology_domain == input$domain, country =="World")
+    b = df %>% filter(technology_domain == "Total Patents", country =="World")
+    infoBox(title = paste0("World Patent Contribution by ", input$domain),
+            value = paste0(signif(sum(a$value)/sum(b$value)*100,2) , "%"))
+})
+
+
+
+
+output$graph6 = renderPlotly({
+
+    df %>% 
+        filter(country!= "World", technology_domain==input$domain) %>% 
+        group_by(country) %>% summarise(sum = sum(value)) %>% top_n(10, sum) %>% 
+        inner_join(df, by = "country") %>% 
+        filter(technology_domain!= "Total Patents") %>% 
+        group_by(country, year) %>% summarise(sum = sum(value)) %>% 
+        ggplot(aes(x = year, y = sum, col = country)) + geom_line()
+})
+
+
+output$graph7 = renderPlotly({
+    df %>% 
+        filter(year == input$domain_year, technology_domain == input$domain, country !="World") %>%
+        group_by(country) %>% summarise(sum = sum(value)) %>% arrange(desc(sum)) %>% top_n(10) %>% 
+        ggplot(aes(x = reorder(country, sum), y = sum)) + geom_bar(stat = "identity") + coord_flip()
+    
 })
 
     
