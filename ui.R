@@ -1,21 +1,15 @@
 
-    
 dashboardPage(
+    
     dashboardHeader(title = "World Patent"),
     dashboardSidebar(
         sidebarUserPanel("Qing Ying"),
         sidebarMenu(
             menuItem("World", tabName = "world", icon = icon("globe")),
             menuItem("Country", tabName = "country", icon = icon("flag")),
-            menuItem("Data", tabName = "data", icon = icon("database")))
-        
-        # sliderInput("world_year",
-        #             "Select Year:",
-        #             min = 1999,
-        #             max = 2017,
-        #             value = 2017,
-        #             sep = "",
-        #             step = 1)
+            menuItem("Tech Domain", tabName = "domain", icon = icon("robot")),
+            menuItem("Data", tabName = "data", icon = icon("database"))
+            )
         
     ),
     dashboardBody(
@@ -23,42 +17,82 @@ dashboardPage(
         tabItems(
             tabItem(tabName = "world",
                     fluidRow(
-                        sliderInput("world_year",
-                                    "Select Year:",
-                                    min = 1999,
-                                    max = 2017,
-                                    value = 2017,
-                                    sep = "",
-                                    step = 1)),
+                        column(
+                        selectInput(
+                            "world_year",
+                            "Select Year:",
+                            choices = unique(df$year),
+                            selected = 2017),
+                        offset = 0.5, width = 6
+                        )),
                     fluidRow(
-                        box(plotlyOutput("map")),
-                        box(plotlyOutput("collab"))),
+                        plotlyOutput("map"),
+                        ),
+                    br(),
                     fluidRow(
-                        box(plotlyOutput("country_rank")),
-                        box(plotlyOutput("domain_rank")))),
+                        column(
+                        box(plotlyOutput("domain_rank"), width = 6),
+                        box(plotlyOutput("country_rank"), width = 4),
+                        width = 11, offset = 0.5
+                        )
+                        )
+                    ),
             
 ###################### Country  
 
             tabItem(tabName = "country",
+
                     fluidRow(
-                        selectInput("country",
-                                    "Select Country:",
-                                    choices = sort(inner_join(unique(info %>% select(country_code, country)),unique(df %>% select(location, country)), by = "country")$country),
-                                    selected = "United States")
-                    ),
-                    fluidRow(
-                        infoBoxOutput("box1"),
-                        infoBoxOutput("box2")
-                    ),
-                    fluidRow(
-                        box(plotlyOutput("country_domain"), width = 12),
-                        box(plotlyOutput("graph1"), width = 9),
-                        box(selectInput("country_year",
-                                        "Select Year:",
-                                        choices = unique(df$year),
-                                        selected = 2017), width = 2)
-                    )),
+                        
+                        column(selectInput("country",
+                                            "Select Country:",
+                                            choices = sort(inner_join(unique(info %>% select(country_code, country)),
+                                                                      unique(df %>% select(location, country)), by = "country")$country),
+                                            selected = "United States"),
+                               offset = 0.5, width = 6)
+                                ),
+                    
+                    tabsetPanel(
+                        tabPanel("Overview",
+                                fluidRow(
+                                    infoBoxOutput("box1"),
+                                    infoBoxOutput("box2")),
+                                fluidRow(
+                                    box(plotlyOutput("country_domain"), width = 9)),
+                                   
+                                  
+                                fluidRow(
+                                    column(selectizeInput("country_year",
+                                                    "Select Year:",
+                                                    choices = unique(df$year),
+                                                    selected = 2017, size = 2),
+                                           offset = 0.5, width = 6)
+                                    ),
+                                fluidRow(
+                                    box(plotlyOutput("graph1"), width = 9)
+                                )),
+                        tabPanel("Additional Insights",
+                                 box(plotlyOutput("graph2")),
+                                 box(plotlyOutput("graph3")),
+                                 box(plotlyOutput("graph4")),
+                                 box(plotlyOutput("graph5"))
             
+                                 )
+                    
+                    )
+                    
+                    ),
+            
+
+###################### Domain 
+
+
+            tabItem(tabName = "domain",
+                    fluidRow(selectInput("domain",
+                                         "Select Tech Domain:",
+                                         choices = sort(unique(df$technology_domain)),
+                                         selected = "Computer technology")),
+                    ),
 
 ###################### Data
 
@@ -73,26 +107,6 @@ dashboardPage(
 
 
 
-# 
-# # Define UI for application that draws a histogram
-# fluidPage(
-# 
-#     # Application title
-#     titlePanel("World Patent"),
-# 
-#     # Sidebar with a slider input for number of bins
-#     sidebarLayout(
-#         sidebarPanel(
-#             sliderInput("bins",
-#                         "Number of bins:",
-#                         min = 1,
-#                         max = 50,
-#                         value = 30)
-#         ),
-# 
-#         # Show a plot of the generated distribution
-#         mainPanel(
-#             plotOutput("distPlot")
-#         )
-#     )
-# )
+
+
+
