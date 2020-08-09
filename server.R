@@ -13,6 +13,7 @@ output$map = renderPlotly({
                    ipc == "TOTAL") %>%
             group_by(location, country) %>%
             summarise(sum = sum(value)) %>% arrange(desc(sum))
+        test$sum = round(test$sum)
         
         fig = plot_geo(test)
         fig %>% add_trace(z = test$sum, color = test$sum, colors = "Blues",
@@ -60,6 +61,8 @@ output$count_world = renderInfoBox({
 
 
 output$country_rank = renderPlotly({
+    
+    
     test = df %>% filter(!(location %in% c("WLD", "EU28")) )
     test =
         test %>%
@@ -71,6 +74,7 @@ output$country_rank = renderPlotly({
     ggplot(head(test, 10), aes(x = reorder(country, sum), y = sum)) + geom_bar(stat = "identity", fill = "#222d32") + 
         coord_flip() +
         labs(x = "", y = "Number of Patents") + theme_light()
+    
 })    
 
 
