@@ -12,6 +12,7 @@ dashboardPage(
             )
         
     ),
+    
     dashboardBody(
         
         tabItems(
@@ -30,6 +31,7 @@ dashboardPage(
                     tabsetPanel(
                         tabPanel("World Map",
                              fluidRow(
+                                 infoBoxOutput("count_world"),
                                  infoBoxOutput("max_country"),
                                  infoBoxOutput("max_domain")
                                  ),
@@ -49,7 +51,7 @@ dashboardPage(
                                      # plotlyOutput("country_rank"), 
                                      # width = 11, offset = 0.5),
                                      
-                                 box(title = "Rank of Tech Domain by Total Patents Count",plotlyOutput("domain_rank"), width = 6)
+                                 box(title = "Rank of Tech Domains by Total Patents Count",plotlyOutput("domain_rank"), width = 6)
                                      
 
                                  
@@ -82,24 +84,28 @@ dashboardPage(
                                 ),
                     
                     tabsetPanel(
-                        tabPanel("Country Overview",
+                        tabPanel("Trend",
                                 fluidRow(
                                     infoBoxOutput("box1"),
                                     infoBoxOutput("box2")),
                                 fluidRow(
-                                    box(plotlyOutput("country_domain"), width = 12)),
+                                    box(plotlyOutput("country_domain"), width = 12))
                                    
-                                  
-                                fluidRow(
-                                    column(selectizeInput("country_year",
-                                                    "Select Year:",
-                                                    choices = unique(df$year),
-                                                    selected = 2018, size = 2),
-                                           offset = 0.5, width = 6)
-                                    ),
-                                fluidRow(
-                                    box(plotlyOutput("graph1"), width = 12)
-                                )),
+
+                                ),
+                        tabPanel("Domain Rank",
+                                 
+                                 fluidRow(
+                                     column(selectizeInput("country_year",
+                                                           "Select Year:",
+                                                           choices = unique(df$year),
+                                                           selected = 2018, size = 2),
+                                            offset = 0.5, width = 3)
+                                   
+                                 ),
+                                 fluidRow(  infoBoxOutput("country_count")),
+                                 fluidRow(
+                                     box(plotlyOutput("graph1"), width = 12))),
                         tabPanel("Additional Insights",
                                  box(plotlyOutput("graph2")),
                                  box(plotlyOutput("graph3")),
@@ -117,30 +123,48 @@ dashboardPage(
 
 
             tabItem(tabName = "domain",
-                    fluidRow(selectInput("domain",
+                    fluidRow(
+                        column(selectInput("domain",
                                          "Select Tech Domain:",
                                          choices = sort(unique(df$technology_domain)),
-                                         selected = "Computer technology")),
-                    fluidRow(
-                        infoBoxOutput("box3"),
-                        infoBoxOutput("box4")
-                    ),
-                    fluidRow(
-                        box(plotlyOutput("graph6"), width = 12)),
-                    fluidRow(
-                        column(selectizeInput("domain_year",
-                                              "Select Year:",
-                                              choices = unique(df$year),
-                                              selected = 2018, size = 2),
-                               offset = 0.5, width = 3)
-                    ),
-                    fluidRow(box(plotlyOutput("graph7"), width = 12))
+                                         selected = "Computer technology"),
+                               offset = 0.5, width = 6)
+                             
+                             ),
+                    
+                    
+                    tabsetPanel(
+                        tabPanel("Trend",
+                                 fluidRow(
+                                     infoBoxOutput("box3"),
+                                     infoBoxOutput("box4")),
+                                 fluidRow(
+                                     box(plotlyOutput("graph6"), width = 12))),
+                        tabPanel("Leaderboard",
+                                 fluidRow(
+                                     column(selectizeInput("domain_year",
+                                                           "Select Year:",
+                                                           choices = unique(df$year),
+                                                           selected = 2018, size = 2),
+                                            offset = 0.5, width = 3)),
+                                 fluidRow(infoBoxOutput("domain_count")),
+                                 fluidRow(box(plotlyOutput("graph7"), width = 12)))
+                    )
+
+                    
                     ),
 
 ###################### Data
 
             tabItem(tabName = "data",
-                    "to be replaced with database")
+                    tabsetPanel(
+                        tabPanel("Patent data",
+                                 dataTableOutput("patent")),
+                        tabPanel("Country data",
+                                 dataTableOutput("info"))
+                    )
+
+                    )
         )
         
     )
