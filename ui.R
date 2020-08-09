@@ -1,7 +1,7 @@
 
 dashboardPage(
     
-    dashboardHeader(title = "World Patent"),
+    dashboardHeader(title = "Global Patents"),
     dashboardSidebar(
         sidebarUserPanel("Qing Ying"),
         sidebarMenu(
